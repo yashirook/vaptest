@@ -23,11 +23,11 @@ func validate(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("target manifests: %s", string(targetJson))
+	fmt.Printf("target manifests: %s\n", string(targetJson))
 
-	policies, err := ldr.LoadObjectFromPaths(policyPaths)
+	policies, bindings, err := ldr.LoadPolicyFromPaths(policyPaths)
 	if err != nil {
-		fmt.Println(fmt.Errorf("failed to load policy manifests: %w", err))
+		fmt.Println(fmt.Errorf("failed to load policy objects: %w", err))
 		return
 	}
 
@@ -36,5 +36,11 @@ func validate(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("policy manifests: %s", string(policyJson))
+	fmt.Printf("policy manifests: %s\n", string(policyJson))
+	bindingsJson, err := json.Marshal(bindings)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("policy manifests: %s\n", string(bindingsJson))
 }
