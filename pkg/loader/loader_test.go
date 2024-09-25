@@ -72,7 +72,7 @@ func TestLoader_LoadFromPaths(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt // capture range variable
 		t.Run(tt.name, func(t *testing.T) {
-			objs, err := ldr.LoadFromPaths(tt.paths)
+			objs, err := ldr.LoadObjectFromPaths(tt.paths)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("LoadFromPaths() error = %v, wantErr %v", err, tt.wantErr)
 			}

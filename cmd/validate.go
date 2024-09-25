@@ -12,7 +12,7 @@ import (
 func validate(cmd *cobra.Command, args []string) {
 
 	ldr := loader.NewLoader(scheme)
-	targets, err := ldr.LoadFromPaths(targetPaths)
+	targets, err := ldr.LoadObjectFromPaths(targetPaths)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to load target manifests: %w", err))
 		return
@@ -25,7 +25,7 @@ func validate(cmd *cobra.Command, args []string) {
 	}
 	fmt.Printf("target manifests: %s", string(targetJson))
 
-	policies, err := ldr.LoadFromPaths(policyPaths)
+	policies, err := ldr.LoadObjectFromPaths(policyPaths)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to load policy manifests: %w", err))
 		return

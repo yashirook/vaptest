@@ -25,8 +25,8 @@ func NewLoader(scheme *runtime.Scheme) *Loader {
 	}
 }
 
-// LoadFromPaths loads resources from a slice of file or directory paths
-func (l *Loader) LoadFromPaths(paths []string) ([]runtime.Object, error) {
+// LoadObjectFromPaths loads resources from a slice of file or directory paths
+func (l *Loader) LoadObjectFromPaths(paths []string) ([]runtime.Object, error) {
 	var objects []runtime.Object
 	for _, path := range paths {
 		objs, err := l.loadFromPath(path)
