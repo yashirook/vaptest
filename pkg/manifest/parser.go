@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -32,9 +31,15 @@ func init() {
 func LoadManifests(path string) ([]runtime.Object, error) {
 	var objects []runtime.Object
 
+	// Process all dir in the directory
 	info, err := os.ReadDir(path)
 	if err != nil {
-		return loadManifestFile(path)
+		objs, err := loadManifestFile(path)
+		if err != nil {
+			return nil, err
+		}
+		objects = append(objects, objs...)
+		return objects, nil
 	}
 
 	// Process all files in the directory
@@ -50,14 +55,13 @@ func LoadManifests(path string) ([]runtime.Object, error) {
 		objects = append(objects, objs...)
 	}
 
-	fmt.Printf("Object: %v", objects)
 	return objects, nil
 }
 
 func loadManifestFile(filePath string) ([]runtime.Object, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, err
+		return nil, &FileReadError{Path: filePath, Err: err}
 	}
 
 	// Split YAML documents
@@ -70,16 +74,20 @@ func loadManifestFile(filePath string) ([]runtime.Object, error) {
 			if err == io.EOF {
 				break
 			}
-			return nil, err
+			return nil, &YAMLParseError{Path: filePath, Err: err}
 		}
 
 		if len(rawObj.Raw) == 0 {
 			continue
 		}
 
-		obj, _, err := codecs.UniversalDeserializer().Decode(rawObj.Raw, nil, nil)
+		obj, gvk, err := codecs.UniversalDeserializer().Decode(rawObj.Raw, nil, nil)
 		if err != nil {
-			return nil, err
+			return nil, &UnknownResourceError{
+				Path:    filePath,
+				Kind:    gvk.Kind,
+				Version: gvk.Version,
+			}
 		}
 
 		objects = append(objects, obj)
