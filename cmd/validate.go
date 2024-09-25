@@ -23,5 +23,18 @@ func validate(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(string(targetJson))
+	fmt.Printf("target manifests: %s", string(targetJson))
+
+	policies, err := ldr.LoadFromPaths(policyPaths)
+	if err != nil {
+		fmt.Println(fmt.Errorf("failed to load policy manifests: %w", err))
+		return
+	}
+
+	policyJson, err := json.Marshal(policies)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("policy manifests: %s", string(policyJson))
 }

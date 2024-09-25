@@ -12,6 +12,7 @@ import (
 
 var (
 	targetPaths []string
+	policyPaths []string
 	scheme      = runtime.NewScheme()
 )
 
@@ -44,6 +45,7 @@ func Execute() {
 func init() {
 	// Cobra settings
 	validateCmd.Flags().StringSliceVarP(&targetPaths, "targets", "t", []string{}, "Path to the target Kubernetes manifests to validate")
+	validateCmd.Flags().StringSliceVarP(&policyPaths, "policies", "p", []string{}, "Path to the ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding manifests to validate")
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(validateCmd)
 
