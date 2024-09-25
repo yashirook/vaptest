@@ -5,7 +5,9 @@ BUILD_DIR=bin
 VERSION=0.1.0
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_DATE=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-LDFLAGS=-ldflags "-X 'github.com/yashirook/vaptest/cmd.version=$(VERSION)' -X 'github.com/yashirook/vaptest/cmd.gitCommit=$(GIT_COMMIT)' -X 'github.com/yashirook/vaptest/cmd.buildDate=$(BUILD_DATE)'"
+LDFLAGS=-ldflags "-X 'github.com/yashirook/vaptest/cmd.version=$(VERSION)' \
+-X 'github.com/yashirook/vaptest/cmd.gitCommit=$(GIT_COMMIT)' \
+-X 'github.com/yashirook/vaptest/cmd.buildDate=$(BUILD_DATE)'"
 
 .PHONY: all build run test clean
 
@@ -30,6 +32,6 @@ clean:
 	@echo "Cleaning up..."
 	rm -rf $(BUILD_DIR)
 
-# この行は、引数をターゲットと解釈しないようにするためのものです
+# This line is to prevent make from interpreting arguments as targets
 %:
 	@:
