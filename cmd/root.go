@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	targetPath string
-	scheme     = runtime.NewScheme()
+	targetPaths []string
+	scheme      = runtime.NewScheme()
 )
 
 var rootCmd = &cobra.Command{
@@ -43,12 +43,14 @@ func Execute() {
 
 func init() {
 	// Cobra settings
-	validateCmd.Flags().StringVarP(&targetPath, "target", "t", "", "Path to the target Kubernetes manifests to validate")
+	validateCmd.Flags().StringSliceVarP(&targetPaths, "targets", "t", []string{}, "Path to the target Kubernetes manifests to validate")
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(validateCmd)
 
-	// Register Kubernetes API types
+	// Register target Kubernetes API types
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
+
+	// Register policy API types
 	_ = admissionregistrationv1.AddToScheme(scheme)
 }

@@ -12,7 +12,7 @@ import (
 func validate(cmd *cobra.Command, args []string) {
 
 	ldr := loader.NewLoader(scheme)
-	targets, err := ldr.LoadFromPaths([]string{targetPath})
+	targets, err := ldr.LoadFromPaths(targetPaths)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to load target manifests: %w", err))
 		return

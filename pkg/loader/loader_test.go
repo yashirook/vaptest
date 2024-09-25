@@ -38,6 +38,21 @@ func TestLoader_LoadFromPaths(t *testing.T) {
 			expected: 2,
 		},
 		{
+			name: "ValidManifestsInMultipleFile",
+			paths: []string{
+				filepath.Join("testdata", "valid_single_manifest.yaml"),
+				filepath.Join("testdata", "valid_multiple_manifests.yaml"),
+			},
+			wantErr:  false,
+			expected: 3,
+		},
+		{
+			name:     "ValidManifestsInDirectory",
+			paths:    []string{filepath.Join("testdata", "multiple_files")},
+			wantErr:  false,
+			expected: 2,
+		},
+		{
 			name:    "InvalidYAML",
 			paths:   []string{filepath.Join("testdata", "invalid_yaml.yaml")},
 			wantErr: true,
