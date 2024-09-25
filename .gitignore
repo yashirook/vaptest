@@ -1,0 +1,22 @@
+# binary files
+vaptest
+vaptest.exe
+
+# build directories
+bin/
+build/
+dist/
+
+# temp files
+*.tmp
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
