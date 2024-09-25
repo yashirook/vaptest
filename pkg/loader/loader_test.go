@@ -53,6 +53,11 @@ func TestLoader_LoadFromPaths(t *testing.T) {
 			expected: 2,
 		},
 		{
+			name:    "NonExistentFile",
+			paths:   []string{"non_existent_file.yaml"},
+			wantErr: true,
+		},
+		{
 			name:    "InvalidYAML",
 			paths:   []string{filepath.Join("testdata", "invalid_yaml.yaml")},
 			wantErr: true,
