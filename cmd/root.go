@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -55,4 +56,5 @@ func init() {
 
 	// Register policy API types
 	_ = admissionregistrationv1.AddToScheme(scheme)
+	_ = admissionregistrationv1beta.AddToScheme(scheme)
 }
