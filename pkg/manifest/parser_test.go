@@ -5,30 +5,65 @@ import (
 	"testing"
 
 	"github.com/yashirook/vaptest/pkg/manifest"
-	appsv1 "k8s.io/api/apps/v1"
 )
 
 func TestLoadManifests(t *testing.T) {
-	testManifestDir := filepath.Join("testdata", "manifests")
-
-	manifests, err := manifest.LoadManifests(testManifestDir)
-	if err != nil {
-		t.Fatalf("Failed to load manifests: %v", err)
+	tests := []struct {
+		name          string
+		path          string
+		wantErr       bool
+		expectedCount int
+		expectedKinds []string
+		expectedNames []string
+	}{
+		{
+			name:          "ValidSingleManifest",
+			path:          filepath.Join("testdata", "valid_single_manifest.yaml"),
+			wantErr:       false,
+			expectedCount: 1,
+			expectedKinds: []string{"Deployment"},
+			expectedNames: []string{"nginx-deployment"},
+		},
+		{
+			name:          "ValidMultipleManifestsInSingleFile",
+			path:          filepath.Join("testdata", "valid_multiple_manifests.yaml"),
+			wantErr:       false,
+			expectedCount: 2,
+			expectedKinds: []string{"Namespace", "Deployment"},
+			expectedNames: []string{"test-namespace", "test-deployment"},
+		},
 	}
 
-	expectedCount := 1
-	if len(manifests) != expectedCount {
-		t.Errorf("Expected %d manifests, got %d", expectedCount, len(manifests))
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifests, err := manifest.LoadManifests(tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("LoadManifests() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-	obj := manifests[0]
-	deployment, ok := obj.(*appsv1.Deployment)
-	if !ok {
-		t.Fatalf("Expected a Deployment, got %T", obj)
-	}
+			if tt.wantErr {
+				return
+			}
 
-	expectedName := "nginx-deployment"
-	if deployment.Name != expectedName {
-		t.Errorf("Expected Deployment name %q, got %q", expectedName, deployment.Name)
+			if len(manifests) != tt.expectedCount {
+				t.Errorf("Expected %d manifests, got %d", tt.expectedCount, len(manifests))
+			}
+
+			for i, obj := range manifests {
+				gvk := obj.GetObjectKind().GroupVersionKind()
+				if gvk.Kind != tt.expectedKinds[i] {
+					t.Errorf("Expected kind %q, got %q", tt.expectedKinds[i], gvk.Kind)
+				}
+
+				accessor, err := manifest.ObjectMeta(obj)
+				if err != nil {
+					t.Errorf("Failed to get object meta: %v", err)
+				}
+
+				if accessor.GetName() != tt.expectedNames[i] {
+					t.Errorf("Expected name %q, got %q", tt.expectedNames[i], accessor.GetName())
+				}
+			}
+		})
 	}
 }

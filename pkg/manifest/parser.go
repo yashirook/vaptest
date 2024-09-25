@@ -9,6 +9,9 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -83,4 +86,14 @@ func loadManifestFile(filePath string) ([]runtime.Object, error) {
 	}
 
 	return objects, nil
+}
+
+// ObjectMeta retrieves the ObjectMeta from a runtime.Object
+func ObjectMeta(obj runtime.Object) (metav1.Object, error) {
+	accessor, err := meta.Accessor(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return accessor, nil
 }
