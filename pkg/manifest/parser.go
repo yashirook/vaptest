@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,7 +37,7 @@ func LoadManifests(path string) ([]runtime.Object, error) {
 	if err != nil {
 		objs, err := loadManifestFile(path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to load manifests: %w", err)
 		}
 		objects = append(objects, objs...)
 		return objects, nil
@@ -50,7 +51,7 @@ func LoadManifests(path string) ([]runtime.Object, error) {
 		filePath := filepath.Join(path, entry.Name())
 		objs, err := loadManifestFile(filePath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to load manifests: %w", err)
 		}
 		objects = append(objects, objs...)
 	}
