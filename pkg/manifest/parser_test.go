@@ -40,6 +40,16 @@ func TestLoadManifests(t *testing.T) {
 			expectedKinds: []string{"Deployment", "Service"},
 			expectedNames: []string{"nginx-deployment", "nginx-service"},
 		},
+		{
+			name:    "InvalidYAMLFile",
+			path:    filepath.Join("testdata", "invalid_yaml.yaml"),
+			wantErr: true,
+		},
+		{
+			name:    "UnknownResource",
+			path:    filepath.Join("testdata", "unknown_resource.yaml"),
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
