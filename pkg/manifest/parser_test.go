@@ -32,6 +32,14 @@ func TestLoadManifests(t *testing.T) {
 			expectedKinds: []string{"Namespace", "Deployment"},
 			expectedNames: []string{"test-namespace", "test-deployment"},
 		},
+		{
+			name:          "ValidMultipleFilesInDirectory",
+			path:          filepath.Join("testdata", "multiple_files"),
+			wantErr:       false,
+			expectedCount: 2,
+			expectedKinds: []string{"Deployment", "Service"},
+			expectedNames: []string{"nginx-deployment", "nginx-service"},
+		},
 	}
 
 	for _, tt := range tests {
