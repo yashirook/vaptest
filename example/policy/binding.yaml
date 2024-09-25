@@ -1,0 +1,11 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-label-binding
+spec:
+  policyName: require-label
+  paramRef:
+    name: ""
+  matchResources:
+    namespaceSelector: {}
+    objectSelector: {}
