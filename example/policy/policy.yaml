@@ -1,0 +1,8 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-label
+spec:
+  validations:
+    - expression: "has(request.object.metadata.labels['app'])"
+  failurePolicy: Fail
