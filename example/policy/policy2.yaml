@@ -8,5 +8,7 @@ spec:
       message: "Deployment has to have label"
     - expression: "has(object.metadata.namespace)"
       message: "Deployment has to have namespace"
+    - expression: "url(object.metadata.labels.host).getHost() == 'www.ub-speeda.com'"
+      message: "url label have to be www.ub-speeda.com"
   failurePolicy: Fail
 

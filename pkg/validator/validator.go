@@ -24,80 +24,23 @@ func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmis
 	}
 }
 
-type ValidationResult struct {
-	PolicyObjectMeta ObjectMeta
-	IsValid          bool
-	Message          string
-	Expression       string
-	TargetObjectMeta ObjectMeta
-}
-
-type ObjectMeta struct {
-	ApiVersion string
-	ApiGroup   string
-	Name       string
-	Namespace  string
-}
-
 func (v *Validator) Validate() ([]ValidationResult, error) {
 	results := make([]ValidationResult, 0)
-	policy := v.Policies[0]
-	prog, err := makeCELProgram(policy)
-	if err != nil {
-		return results, errors.New(fmt.Sprintf("Failed to make AST: %w\n", err))
-	}
-
-	fmt.Printf("target objects length: %d\n", len(v.TargetObjects))
-
-	for _, target := range v.TargetObjects {
-		objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(target)
+	for _, policy := range v.Policies {
+		res, err := v.validatePolicy(policy)
 		if err != nil {
-			fmt.Println(err)
 			return results, err
 		}
-
-		activation := map[string]interface{}{
-			"object": objMap,
-		}
-
-		out, _, err := prog.Eval(activation)
-		if err != nil {
-			fmt.Printf("eval error: %s\n", err)
-			continue
-		}
-		isValid, ok := out.Value().(bool)
-		if !ok {
-			return results, errors.New("failed to convert CEL result to bool")
-		}
-
-		metadata := objMap["metadata"].(map[string]interface{})
-		results = append(results, ValidationResult{
-			PolicyObjectMeta: ObjectMeta{
-				ApiVersion: policy.APIVersion,
-				ApiGroup:   policy.Kind,
-				Name:       policy.Name,
-			},
-			IsValid:    isValid,
-			Message:    policy.Spec.Validations[0].Message,
-			Expression: policy.Spec.Validations[0].Expression,
-			TargetObjectMeta: ObjectMeta{
-				ApiVersion: objMap["apiVersion"].(string),
-				ApiGroup:   objMap["kind"].(string),
-				Name:       metadata["name"].(string),
-				// [TODO] namespaceを返すようにする。namespaceが設定されていない場合のエラーハンドリングが必要
-				// Namespace:  metadata["namespace"].(string),
-			},
-		})
+		results = append(results, res...)
 	}
 	return results, nil
 }
 
-func makeCELProgram(policy *v1.ValidatingAdmissionPolicy) (cel.Program, error) {
+func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 	celEnv := environment.MustBaseEnvSet(environment.DefaultCompatibilityVersion(), false)
 	env := celEnv.NewExpressionsEnv()
-	validationRule := policy.Spec.Validations[0]
 
-	ast, issues := env.Parse(validationRule.Expression)
+	ast, issues := env.Parse(validation.Expression)
 	if issues != nil && issues.Err() != nil {
 		return nil, errors.New(fmt.Sprintf("CEL expression parse error: %w\n", issues.Err()))
 	}
@@ -113,9 +56,9 @@ func makeCELProgram(policy *v1.ValidatingAdmissionPolicy) (cel.Program, error) {
 
 func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]ValidationResult, error) {
 	results := make([]ValidationResult, 0)
-	for _, rule := range policy.Spec.Validations {
+	for _, validation := range policy.Spec.Validations {
 
-		prog, err := makeCELProgram(policy)
+		prog, err := makeCELProgram(&validation)
 		if err != nil {
 			return results, errors.New(fmt.Sprintf("Failed to make AST: %w\n", err))
 		}
@@ -151,8 +94,8 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 					Name:       policy.Name,
 				},
 				IsValid:    isValid,
-				Message:    policy.Spec.Validations[0].Message,
-				Expression: policy.Spec.Validations[0].Expression,
+				Message:    validation.Message,
+				Expression: validation.Expression,
 				TargetObjectMeta: ObjectMeta{
 					ApiVersion: objMap["apiVersion"].(string),
 					ApiGroup:   objMap["kind"].(string),
@@ -164,4 +107,5 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 		}
 
 	}
+	return results, nil
 }
