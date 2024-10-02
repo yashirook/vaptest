@@ -16,12 +16,24 @@ type Validator struct {
 	PolicyBindings []*v1.ValidatingAdmissionPolicyBinding
 }
 
-func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding) Validator {
+func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding) (Validator, error) {
+	if len(targetObjects) == 0 {
+		return Validator{}, errors.New("target objects is empty")
+	}
+
+	if len(policies) == 0 {
+		return Validator{}, errors.New("policies is empty")
+	}
+
+	if len(PolicyBindings) == 0 {
+		return Validator{}, errors.New("policy bindings is empty")
+	}
+
 	return Validator{
 		TargetObjects:  targetObjects,
 		Policies:       policies,
 		PolicyBindings: PolicyBindings,
-	}
+	}, nil
 }
 
 func (v *Validator) Validate() ([]ValidationResult, error) {
@@ -63,8 +75,6 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 			return results, errors.New(fmt.Sprintf("Failed to make AST: %w\n", err))
 		}
 
-		fmt.Printf("target objects length: %d\n", len(v.TargetObjects))
-
 		for _, target := range v.TargetObjects {
 			objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(target)
 			if err != nil {
@@ -105,7 +115,6 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 				},
 			})
 		}
-
 	}
 	return results, nil
 }

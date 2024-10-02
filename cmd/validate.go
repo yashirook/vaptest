@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -19,33 +18,18 @@ func validate(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	targetJson, err := json.Marshal(targets)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("target manifests: %s\n", string(targetJson))
-
 	policies, bindings, err := ldr.LoadPolicyFromPaths(policyPaths)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to load policy objects: %w", err))
 		return
 	}
 
-	policyJson, err := json.Marshal(policies)
+	validator, err := validator.NewValidator(targets, policies, bindings)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(fmt.Errorf("failed to create validator: %w", err))
 		return
 	}
-	fmt.Printf("policy manifests: %s\n", string(policyJson))
-	bindingsJson, err := json.Marshal(bindings)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("policy manifests: %s\n", string(bindingsJson))
 
-	validator := validator.NewValidator(targets, policies, bindings)
 	results, err := validator.Validate()
 	if err != nil {
 		fmt.Printf("validation error: %v", err)
