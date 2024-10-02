@@ -4,5 +4,7 @@ metadata:
   name: require-label
 spec:
   validations:
-    - expression: "has(request.object.metadata.labels['app'])"
+    - expression: "has(object.metadata.labels)"
+      message: "Deployment has to have label"
   failurePolicy: Fail
+

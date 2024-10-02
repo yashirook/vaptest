@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yashirook/vaptest/pkg/loader"
+	"github.com/yashirook/vaptest/pkg/validator"
 )
 
 func validate(cmd *cobra.Command, args []string) {
@@ -43,4 +44,12 @@ func validate(cmd *cobra.Command, args []string) {
 		return
 	}
 	fmt.Printf("policy manifests: %s\n", string(bindingsJson))
+
+	validator := validator.NewValidator(targets, policies, bindings)
+	results, err := validator.Validate()
+	if err != nil {
+		fmt.Printf("validation error: %v", err)
+	}
+
+	fmt.Printf("results (len=%d): %v", len(results), results)
 }
