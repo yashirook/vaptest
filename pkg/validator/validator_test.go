@@ -156,9 +156,9 @@ func TestValidatePolicy(t *testing.T) {
 				},
 				{
 					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{"name": "test-valid2-object"},
+						"metadata": map[string]interface{}{"name": "test-object-invalid"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-valid2-object",
+					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object-invalid",
 				},
 			},
 			expectedResults: []ValidationResult{
@@ -186,16 +186,16 @@ func TestValidatePolicy(t *testing.T) {
 					Message:          "名前は'test'で始まる必要があります",
 					Expression:       "object.metadata.name.startsWith('test')",
 					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid2-object",
+						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
 					},
 				},
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
-					IsValid:          true,
+					IsValid:          false,
 					Message:          "名前は'object'で終わる必要があります",
 					Expression:       "object.metadata.name.endsWith('object')",
 					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid2-object",
+						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
 					},
 				},
 			},
