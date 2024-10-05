@@ -12,14 +12,14 @@ import (
 )
 
 type Validator struct {
-	TargetObjects  []runtime.Object
+	TargetInfoList []target.TargetInfo
 	Policies       []*v1.ValidatingAdmissionPolicy
 	PolicyBindings []*v1.ValidatingAdmissionPolicyBinding
 	Scheme         *runtime.Scheme
 }
 
-func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding, scheme *runtime.Scheme) (Validator, error) {
-	if len(targetObjects) == 0 {
+func NewValidator(targets target.TargetInfoList, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding, scheme *runtime.Scheme) (Validator, error) {
+	if len(targets) == 0 {
 		return Validator{}, errors.New("target objects is empty")
 	}
 
@@ -28,10 +28,9 @@ func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmis
 	}
 
 	return Validator{
-		TargetObjects:  targetObjects,
+		TargetInfoList: targets,
 		Policies:       policies,
 		PolicyBindings: PolicyBindings,
-		Scheme:         scheme,
 	}, nil
 }
 
@@ -66,18 +65,11 @@ func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 
 func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]ValidationResult, error) {
 	results := make([]ValidationResult, 0)
-	filteredTargets := make([]runtime.Object, 0)
+	filteredTargets := make(target.TargetInfoList, 0)
 
-	for _, t := range v.TargetObjects {
-		targetInfo, err := target.NewTargetInfo(t, v.Scheme)
-		if err != nil {
-			return results, err
-		}
-
-		fmt.Printf("targetInfo: %v\n", targetInfo)
-
+	for _, t := range v.TargetInfoList {
 		if policy.Spec.MatchConstraints != nil {
-			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, targetInfo)
+			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t)
 			if !matched {
 				continue
 			}
@@ -93,13 +85,8 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 		}
 
 		for _, t := range filteredTargets {
-			objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(t)
-			if err != nil {
-				return results, fmt.Errorf("failed to convert object to unstructured: %w", err)
-			}
-
 			activation := map[string]interface{}{
-				"object": objMap,
+				"object": t.Object,
 			}
 
 			out, _, err := prog.Eval(activation)
@@ -112,7 +99,6 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 				return results, fmt.Errorf("failed to convert CEL result to bool")
 			}
 
-			metadata := objMap["metadata"].(map[string]interface{})
 			results = append(results, ValidationResult{
 				PolicyObjectMeta: ObjectMeta{
 					ApiVersion: policy.APIVersion,
@@ -123,9 +109,9 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 				Message:    validation.Message,
 				Expression: validation.Expression,
 				TargetObjectMeta: ObjectMeta{
-					ApiVersion: objMap["apiVersion"].(string),
-					ApiGroup:   objMap["kind"].(string),
-					Name:       metadata["name"].(string),
+					ApiVersion: t.APIGroup,
+					ApiGroup:   t.APIVersion,
+					Name:       t.ResourceName,
 					// [TODO] namespaceを返すようにする。namespaceが設定されていない場合のエラーハンドリングが必要
 					// Namespace:  metadata["namespace"].(string),
 				},

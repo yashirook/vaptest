@@ -19,6 +19,20 @@ type TargetInfo struct {
 	Object       map[string]interface{}
 }
 
+type TargetInfoList []TargetInfo
+
+func NewTargetInfoList(objects []runtime.Object, scheme *runtime.Scheme) (TargetInfoList, error) {
+	results := make([]TargetInfo, 0)
+	for _, obj := range objects {
+		info, err := NewTargetInfo(obj, scheme)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *info)
+	}
+	return results, nil
+}
+
 func NewTargetInfo(obj runtime.Object, scheme *runtime.Scheme) (*TargetInfo, error) {
 	metaObj, err := getObjectMeta(obj)
 	if err != nil {

@@ -6,17 +6,20 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yashirook/vaptest/pkg/loader"
+	"github.com/yashirook/vaptest/pkg/target"
 	"github.com/yashirook/vaptest/pkg/validator"
 )
 
 func validate(cmd *cobra.Command, args []string) {
 
 	ldr := loader.NewLoader(scheme)
-	targets, err := ldr.LoadObjectFromPaths(targetPaths)
+	targetObjects, err := ldr.LoadObjectFromPaths(targetPaths)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to load target manifests: %w", err))
 		return
 	}
+
+	targets, err := target.NewTargetInfoList(targetObjects, scheme)
 
 	policies, bindings, err := ldr.LoadPolicyFromPaths(policyPaths)
 	if err != nil {
