@@ -55,6 +55,12 @@ func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 		return nil, fmt.Errorf("CEL expression parse error: %w", issues.Err())
 	}
 
+	// todo: check implementation
+	// _, issues = env.Check(ast)
+	// if issues != nil && issues.Err() != nil {
+	// 	return nil, fmt.Errorf("CEL expression check error: %w", issues.Err())
+	// }
+
 	prog, err := env.Program(ast)
 	if err != nil {
 		return nil, fmt.Errorf("build CEL Program error: %w", err)
