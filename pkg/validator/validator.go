@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/cel-go/cel"
+	"github.com/yashirook/vaptest/pkg/target"
 	v1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/cel/environment"
@@ -14,9 +15,10 @@ type Validator struct {
 	TargetObjects  []runtime.Object
 	Policies       []*v1.ValidatingAdmissionPolicy
 	PolicyBindings []*v1.ValidatingAdmissionPolicyBinding
+	Scheme         *runtime.Scheme
 }
 
-func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding) (Validator, error) {
+func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmissionPolicy, PolicyBindings []*v1.ValidatingAdmissionPolicyBinding, scheme *runtime.Scheme) (Validator, error) {
 	if len(targetObjects) == 0 {
 		return Validator{}, errors.New("target objects is empty")
 	}
@@ -25,14 +27,11 @@ func NewValidator(targetObjects []runtime.Object, policies []*v1.ValidatingAdmis
 		return Validator{}, errors.New("policies is empty")
 	}
 
-	if len(PolicyBindings) == 0 {
-		return Validator{}, errors.New("policy bindings is empty")
-	}
-
 	return Validator{
 		TargetObjects:  targetObjects,
 		Policies:       policies,
 		PolicyBindings: PolicyBindings,
+		Scheme:         scheme,
 	}, nil
 }
 
@@ -68,6 +67,26 @@ func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 
 func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]ValidationResult, error) {
 	results := make([]ValidationResult, 0)
+	filteredTargets := make([]runtime.Object, 0)
+
+	for _, t := range v.TargetObjects {
+		targetInfo, err := target.NewTargetInfo(t, v.Scheme)
+		if err != nil {
+			return results, err
+		}
+
+		fmt.Printf("targetInfo: %v\n", targetInfo)
+
+		if policy.Spec.MatchConstraints != nil {
+			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, targetInfo)
+			if !matched {
+				continue
+			}
+		}
+
+		filteredTargets = append(filteredTargets, t)
+	}
+
 	for _, validation := range policy.Spec.Validations {
 
 		prog, err := makeCELProgram(&validation)
@@ -75,8 +94,8 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 			return results, errors.New(fmt.Sprintf("Failed to make AST: %w\n", err))
 		}
 
-		for _, target := range v.TargetObjects {
-			objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(target)
+		for _, t := range filteredTargets {
+			objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(t)
 			if err != nil {
 				fmt.Println(err)
 				return results, err

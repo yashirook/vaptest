@@ -24,7 +24,7 @@ func validate(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	validator, err := validator.NewValidator(targets, policies, bindings)
+	validator, err := validator.NewValidator(targets, policies, bindings, scheme)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to create validator: %w", err))
 		return
