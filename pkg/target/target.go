@@ -40,12 +40,19 @@ func NewTargetInfo(obj runtime.Object, scheme *runtime.Scheme) (*TargetInfo, err
 
 	resourceName := metaObj.GetName()
 
+	objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	if err != nil {
+		fmt.Println(err)
+		return &TargetInfo{}, err
+	}
+
 	targetInfo := TargetInfo{
 		APIGroup:     gvk.Group,
 		APIVersion:   gvk.Version,
 		Resource:     gvr.Resource,
 		SubResource:  "", // サブリソースがある場合は設定
 		ResourceName: resourceName,
+		Object:       objMap,
 	}
 
 	return &targetInfo, nil

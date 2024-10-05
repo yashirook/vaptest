@@ -53,13 +53,12 @@ func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 
 	ast, issues := env.Parse(validation.Expression)
 	if issues != nil && issues.Err() != nil {
-		return nil, errors.New(fmt.Sprintf("CEL expression parse error: %w\n", issues.Err()))
+		return nil, fmt.Errorf("CEL expression parse error: %w", issues.Err())
 	}
 
 	prog, err := env.Program(ast)
 	if err != nil {
-		fmt.Println(err)
-		return nil, errors.New(fmt.Sprintf("Build CEL Program error: %w\n", err))
+		return nil, fmt.Errorf("build CEL Program error: %w", err)
 	}
 
 	return prog, nil
@@ -88,17 +87,15 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 	}
 
 	for _, validation := range policy.Spec.Validations {
-
 		prog, err := makeCELProgram(&validation)
 		if err != nil {
-			return results, errors.New(fmt.Sprintf("Failed to make AST: %w\n", err))
+			return results, fmt.Errorf("failed to make AST: %w", err)
 		}
 
 		for _, t := range filteredTargets {
 			objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(t)
 			if err != nil {
-				fmt.Println(err)
-				return results, err
+				return results, fmt.Errorf("failed to convert object to unstructured: %w", err)
 			}
 
 			activation := map[string]interface{}{
@@ -112,7 +109,7 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 			}
 			isValid, ok := out.Value().(bool)
 			if !ok {
-				return results, errors.New("failed to convert CEL result to bool")
+				return results, fmt.Errorf("failed to convert CEL result to bool")
 			}
 
 			metadata := objMap["metadata"].(map[string]interface{})
