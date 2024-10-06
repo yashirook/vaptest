@@ -10,6 +10,10 @@ func filterTarget(policy *v1.ValidatingAdmissionPolicy, targetInfoList target.Ta
 
 	for _, t := range targetInfoList {
 		if policy.Spec.MatchConstraints != nil {
+			excluded := matchesRule(policy.Spec.MatchConstraints.ExcludeResourceRules, &t)
+			if excluded {
+				continue
+			}
 			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t)
 			if !matched {
 				continue
