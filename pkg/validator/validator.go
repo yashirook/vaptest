@@ -75,10 +75,10 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 	if err != nil {
 		return results, fmt.Errorf("failed to filter target: %w", err)
 	}
-	var success bool = true
 	var isValidated bool = false
 
 	for _, t := range filteredTargets {
+		var success bool = true
 		validationErrors := make([]ValidationError, 0)
 		for _, validation := range policy.Spec.Validations {
 			prog, err := makeCELProgram(&validation)
@@ -92,7 +92,7 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 
 			out, _, err := prog.Eval(activation)
 			if err != nil {
-				fmt.Printf("eval error: %s\n", err)
+				fmt.Printf("eval error: resource=%s, policy=%s, expression=%s, error=%s\n", t.TargetIdentifier.ResourceName, policy.Name, validation.Expression, err)
 				continue
 			}
 			res, ok := out.Value().(bool)

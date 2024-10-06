@@ -18,6 +18,7 @@ type TargetInfo struct {
 type TargetIdentifier struct {
 	APIGroup     string `json:"apiGroup"`
 	APIVersion   string `json:"apiVersion"`
+	Kind         string `json:"kind"`
 	Resource     string `json:"resource"`
 	SubResource  string `json:"subResource"`
 	ResourceName string `json:"resourceName"`
@@ -70,6 +71,7 @@ func NewTargetInfo(obj runtime.Object, scheme *runtime.Scheme) (*TargetInfo, err
 			APIGroup:     gvk.Group,
 			APIVersion:   gvk.Version,
 			Resource:     gvr.Resource,
+			Kind:         gvk.Kind,
 			SubResource:  "", // サブリソースがある場合は設定
 			Namespace:    metaObj.GetNamespace(),
 			ResourceName: resourceName,

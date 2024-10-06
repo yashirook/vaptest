@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yashirook/vaptest/pkg/loader"
+	"github.com/yashirook/vaptest/pkg/output"
 	"github.com/yashirook/vaptest/pkg/target"
 	"github.com/yashirook/vaptest/pkg/validator"
 )
@@ -38,5 +39,6 @@ func validate(cmd *cobra.Command, args []string) {
 		fmt.Printf("validation error: %v", err)
 	}
 
-	fmt.Printf("results (len=%d): %v", len(results), results)
+	formatter := output.NewDefaultFormatter()
+	formatter.Format(results)
 }
