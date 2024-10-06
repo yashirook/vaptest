@@ -18,14 +18,14 @@ func TestValidatePolicy(t *testing.T) {
 		expectedError   string
 	}{
 		{
-			name: "正常なケース - 有効なオブジェクト",
+			name: "Valid case - Valid object",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "test-policy"},
 				Spec: v1.ValidatingAdmissionPolicySpec{
 					Validations: []v1.Validation{
 						{
 							Expression: "object.metadata.name.startsWith('test')",
-							Message:    "名前は'test'で始まる必要があります",
+							Message:    "Name must start with 'test'",
 						},
 					},
 				},
@@ -42,7 +42,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "test-policy"},
 					IsValid:          true,
-					Message:          "名前は'test'で始まる必要があります",
+					Message:          "Name must start with 'test'",
 					Expression:       "object.metadata.name.startsWith('test')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object",
@@ -51,14 +51,14 @@ func TestValidatePolicy(t *testing.T) {
 			},
 		},
 		{
-			name: "正常なケース - 無効なオブジェクト",
+			name: "Valid case - Invalid object",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "test-policy"},
 				Spec: v1.ValidatingAdmissionPolicySpec{
 					Validations: []v1.Validation{
 						{
 							Expression: "object.metadata.name.startsWith('test')",
-							Message:    "名前は'test'で始まる必要があります",
+							Message:    "Name must start with 'test'",
 						},
 					},
 				},
@@ -75,7 +75,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "test-policy"},
 					IsValid:          false,
-					Message:          "名前は'test'で始まる必要があります",
+					Message:          "Name must start with 'test'",
 					Expression:       "object.metadata.name.startsWith('test')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "invalid-object",
@@ -85,14 +85,14 @@ func TestValidatePolicy(t *testing.T) {
 		},
 		// todo: invalid CEL expression
 		// {
-		// 	name: "異常系 - 無効なCEL式",
+		// 	name: "Error case - Invalid CEL expression",
 		// 	policy: &v1.ValidatingAdmissionPolicy{
 		// 		ObjectMeta: metav1.ObjectMeta{Name: "invalid-policy"},
 		// 		Spec: v1.ValidatingAdmissionPolicySpec{
 		// 			Validations: []v1.Validation{
 		// 				{
 		// 					Expression: "invalid.expression",
-		// 					Message:    "この式は無効です",
+		// 					Message:    "This expression is invalid",
 		// 				},
 		// 			},
 		// 		},
@@ -108,14 +108,14 @@ func TestValidatePolicy(t *testing.T) {
 		// 	expectedError: "failed to make AST",
 		// },
 		{
-			name: "異常系 - CEL評価エラー",
+			name: "Error case - CEL evaluation error",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "error-policy"},
 				Spec: v1.ValidatingAdmissionPolicySpec{
 					Validations: []v1.Validation{
 						{
 							Expression: "object.nonexistent.field == true",
-							Message:    "存在しないフィールドにアクセスしています",
+							Message:    "Accessing a non-existent field",
 						},
 					},
 				},
@@ -131,18 +131,18 @@ func TestValidatePolicy(t *testing.T) {
 			expectedResults: []ValidationResult{},
 		},
 		{
-			name: "正常なケース - 複数の検証",
+			name: "Valid case - Multiple validations",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "multi-validation-policy"},
 				Spec: v1.ValidatingAdmissionPolicySpec{
 					Validations: []v1.Validation{
 						{
 							Expression: "object.metadata.name.startsWith('test')",
-							Message:    "名前は'test'で始まる必要があります",
+							Message:    "Name must start with 'test'",
 						},
 						{
 							Expression: "object.metadata.name.endsWith('object')",
-							Message:    "名前は'object'で終わる必要があります",
+							Message:    "Name must end with 'object'",
 						},
 					},
 				},
@@ -165,7 +165,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
 					IsValid:          true,
-					Message:          "名前は'test'で始まる必要があります",
+					Message:          "Name must start with 'test'",
 					Expression:       "object.metadata.name.startsWith('test')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid-object",
@@ -174,7 +174,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
 					IsValid:          true,
-					Message:          "名前は'object'で終わる必要があります",
+					Message:          "Name must end with 'object'",
 					Expression:       "object.metadata.name.endsWith('object')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid-object",
@@ -183,7 +183,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
 					IsValid:          true,
-					Message:          "名前は'test'で始まる必要があります",
+					Message:          "Name must start with 'test'",
 					Expression:       "object.metadata.name.startsWith('test')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
@@ -192,7 +192,7 @@ func TestValidatePolicy(t *testing.T) {
 				{
 					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
 					IsValid:          false,
-					Message:          "名前は'object'で終わる必要があります",
+					Message:          "Name must end with 'object'",
 					Expression:       "object.metadata.name.endsWith('object')",
 					TargetObjectMeta: ObjectMeta{
 						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
