@@ -105,24 +105,28 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 				return results, fmt.Errorf("failed to convert CEL result to bool")
 			}
 
-			results = append(results, ValidationResult{
-				PolicyObjectMeta: ObjectMeta{
-					ApiVersion: policy.APIVersion,
-					ApiGroup:   policy.Kind,
-					Name:       policy.Name,
-				},
-				IsValid:    isValid,
-				Message:    validation.Message,
-				Expression: validation.Expression,
-				TargetObjectMeta: ObjectMeta{
-					ApiVersion: t.APIGroup,
-					ApiGroup:   t.APIVersion,
-					Name:       t.ResourceName,
-					// [TODO] namespaceを返すようにする。namespaceが設定されていない場合のエラーハンドリングが必要
-					// Namespace:  metadata["namespace"].(string),
-				},
-			})
+			results = appendResult(results, isValid, policy, t, validation)
 		}
 	}
 	return results, nil
+}
+
+func appendResult(results []ValidationResult, isValid bool, policy *v1.ValidatingAdmissionPolicy, target target.TargetInfo, validation v1.Validation) []ValidationResult {
+	return append(results, ValidationResult{
+		PolicyObjectMeta: ObjectMeta{
+			ApiVersion: policy.APIVersion,
+			ApiGroup:   policy.Kind,
+			Name:       policy.Name,
+		},
+		IsValid:    isValid,
+		Message:    validation.Message,
+		Expression: validation.Expression,
+		TargetObjectMeta: ObjectMeta{
+			ApiVersion: target.APIGroup,
+			ApiGroup:   target.APIVersion,
+			Name:       target.ResourceName,
+			// [TODO] namespaceを返すようにする。namespaceが設定されていない場合のエラーハンドリングが必要
+			// Namespace:  metadata["namespace"].(string),
+		},
+	})
 }
