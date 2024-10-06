@@ -33,7 +33,7 @@ func matchesRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetIn
 
 func matchesString(patterns []string, value string) bool {
 	if len(patterns) == 0 {
-		// パターンが指定されていない場合はマッチ
+		// Match if no pattern is specified
 		return true
 	}
 	for _, pattern := range patterns {
@@ -50,14 +50,14 @@ func matchesResource(patterns []string, resource string, subResource string) boo
 		fullResource = resource + "/" + subResource
 	}
 	if len(patterns) == 0 {
-		// パターンが指定されていない場合はマッチ
+		// Match if no pattern is specified
 		return true
 	}
 	for _, pattern := range patterns {
 		if pattern == "*" || pattern == resource || pattern == fullResource {
 			return true
 		}
-		// ワイルドカード付きのパターンを処理（例: "pods/*"）
+		// Process patterns with wildcards (e.g., "pods/*")
 		if strings.HasSuffix(pattern, "/*") {
 			baseResource := strings.TrimSuffix(pattern, "/*")
 			if baseResource == resource {
