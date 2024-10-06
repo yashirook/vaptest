@@ -16,6 +16,7 @@ type TargetInfo struct {
 	Resource     string
 	SubResource  string
 	ResourceName string
+	Namespace    string
 	Object       map[string]interface{}
 }
 
@@ -65,6 +66,7 @@ func NewTargetInfo(obj runtime.Object, scheme *runtime.Scheme) (*TargetInfo, err
 		APIVersion:   gvk.Version,
 		Resource:     gvr.Resource,
 		SubResource:  "", // サブリソースがある場合は設定
+		Namespace:    metaObj.GetNamespace(),
 		ResourceName: resourceName,
 		Object:       objMap,
 	}
