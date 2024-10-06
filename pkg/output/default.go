@@ -50,7 +50,7 @@ func (d *DefaultFormatter) Format(results []validator.ValidationResult) error {
 		// エラー内容をまとめる
 		var errorDetails []string
 		for _, err := range result.ValidationErrors {
-			errorDetails = append(errorDetails, fmt.Sprintf("%s (CEL: %s)", err.Message, err.CELExpr))
+			errorDetails = append(errorDetails, fmt.Sprintf("%s (Expression: %s)", err.Message, err.CELExpr))
 		}
 		errors := strings.Join(errorDetails, ", ")
 

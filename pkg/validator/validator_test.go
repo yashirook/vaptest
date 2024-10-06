@@ -104,30 +104,34 @@ func TestValidatePolicy(t *testing.T) {
 				},
 			},
 		},
-		// todo: invalid CEL expression
-		// {
-		// 	name: "Error case - Invalid CEL expression",
-		// 	policy: &v1.ValidatingAdmissionPolicy{
-		// 		ObjectMeta: metav1.ObjectMeta{Name: "invalid-policy"},
-		// 		Spec: v1.ValidatingAdmissionPolicySpec{
-		// 			Validations: []v1.Validation{
-		// 				{
-		// 					Expression: "invalid.expression",
-		// 					Message:    "This expression is invalid",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	targetInfoList: target.TargetInfoList{
-		// 		{
-		// 			Object: map[string]interface{}{
-		// 				"metadata": map[string]interface{}{"name": "test-object"},
-		// 			},
-		// 			APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object",
-		// 		},
-		// 	},
-		// 	expectedError: "failed to make AST",
-		// },
+		{
+			name: "Error case - Invalid CEL expression",
+			policy: &v1.ValidatingAdmissionPolicy{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-policy"},
+				Spec: v1.ValidatingAdmissionPolicySpec{
+					Validations: []v1.Validation{
+						{
+							Expression: "invalid",
+							Message:    "This expression is invalid",
+						},
+					},
+				},
+			},
+			targetInfoList: target.TargetInfoList{
+				{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{"name": "test-object"},
+					},
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:     "test.group",
+						APIVersion:   "v1",
+						Resource:     "test-object",
+						ResourceName: "test-object",
+					},
+				},
+			},
+			expectedResults: []ValidationResult{},
+		},
 		{
 			name: "Error case - CEL evaluation error",
 			policy: &v1.ValidatingAdmissionPolicy{
@@ -147,9 +151,10 @@ func TestValidatePolicy(t *testing.T) {
 						"metadata": map[string]interface{}{"name": "test-object"},
 					},
 					TargetIdentifier: target.TargetIdentifier{
-						APIGroup:   "test.group",
-						APIVersion: "v1",
-						Resource:   "test-object",
+						APIGroup:     "test.group",
+						APIVersion:   "v1",
+						Resource:     "test-object",
+						ResourceName: "test-object",
 					},
 				},
 			},
