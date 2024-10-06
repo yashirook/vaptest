@@ -8,10 +8,10 @@ spec:
       message: "Deployment has to have label"
     - expression: "has(object.metadata.namespace)"
       message: "Deployment has to have namespace"
-  matchConstraints:
-    resourceRules:
-      - apiGroups: ["apps"]
-        apiVersions: ["v1"]
-        resources: ["deployments"]
+  # matchConstraints:
+  #   resourceRules:
+  #     - apiGroups: ["apps"]
+  #       apiVersions: ["v1"]
+  #       resources: ["deployments"]
   failurePolicy: Fail
 

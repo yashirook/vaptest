@@ -11,13 +11,17 @@ import (
 )
 
 type TargetInfo struct {
-	APIGroup     string
-	APIVersion   string
-	Resource     string
-	SubResource  string
-	ResourceName string
-	Namespace    string
-	Object       map[string]interface{}
+	TargetIdentifier
+	Object map[string]interface{}
+}
+
+type TargetIdentifier struct {
+	APIGroup     string `json:"apiGroup"`
+	APIVersion   string `json:"apiVersion"`
+	Resource     string `json:"resource"`
+	SubResource  string `json:"subResource"`
+	ResourceName string `json:"resourceName"`
+	Namespace    string `json:"namespace"`
 }
 
 type TargetInfoList []TargetInfo
@@ -62,13 +66,15 @@ func NewTargetInfo(obj runtime.Object, scheme *runtime.Scheme) (*TargetInfo, err
 	}
 
 	targetInfo := TargetInfo{
-		APIGroup:     gvk.Group,
-		APIVersion:   gvk.Version,
-		Resource:     gvr.Resource,
-		SubResource:  "", // サブリソースがある場合は設定
-		Namespace:    metaObj.GetNamespace(),
-		ResourceName: resourceName,
-		Object:       objMap,
+		TargetIdentifier: TargetIdentifier{
+			APIGroup:     gvk.Group,
+			APIVersion:   gvk.Version,
+			Resource:     gvr.Resource,
+			SubResource:  "", // サブリソースがある場合は設定
+			Namespace:    metaObj.GetNamespace(),
+			ResourceName: resourceName,
+		},
+		Object: objMap,
 	}
 
 	return &targetInfo, nil

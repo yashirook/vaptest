@@ -18,9 +18,11 @@ func TestMatchesRule(t *testing.T) {
 			name:  "Empty rules",
 			rules: []v1.NamedRuleWithOperations{},
 			targetInfo: &target.TargetInfo{
-				APIGroup:   "apps",
-				APIVersion: "v1",
-				Resource:   "deployments",
+				TargetIdentifier: target.TargetIdentifier{
+					APIGroup:   "apps",
+					APIVersion: "v1",
+					Resource:   "deployments",
+				},
 			},
 			want: true,
 		},
@@ -38,9 +40,11 @@ func TestMatchesRule(t *testing.T) {
 				},
 			},
 			targetInfo: &target.TargetInfo{
-				APIGroup:   "apps",
-				APIVersion: "v1",
-				Resource:   "deployments",
+				TargetIdentifier: target.TargetIdentifier{
+					APIGroup:   "apps",
+					APIVersion: "v1",
+					Resource:   "deployments",
+				},
 			},
 			want: true,
 		},
@@ -58,9 +62,11 @@ func TestMatchesRule(t *testing.T) {
 				},
 			},
 			targetInfo: &target.TargetInfo{
-				APIGroup:   "apps",
-				APIVersion: "v1",
-				Resource:   "deployments",
+				TargetIdentifier: target.TargetIdentifier{
+					APIGroup:   "apps",
+					APIVersion: "v1",
+					Resource:   "deployments",
+				},
 			},
 			want: true,
 		},
@@ -78,9 +84,11 @@ func TestMatchesRule(t *testing.T) {
 				},
 			},
 			targetInfo: &target.TargetInfo{
-				APIGroup:   "apps",
-				APIVersion: "v1",
-				Resource:   "deployments",
+				TargetIdentifier: target.TargetIdentifier{
+					APIGroup:   "apps",
+					APIVersion: "v1",
+					Resource:   "deployments",
+				},
 			},
 			want: false,
 		},

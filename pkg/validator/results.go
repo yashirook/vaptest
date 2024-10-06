@@ -1,16 +1,20 @@
 package validator
 
-type ValidationResult struct {
-	PolicyObjectMeta ObjectMeta
-	IsValid          bool
-	Message          string
-	Expression       string
-	TargetObjectMeta ObjectMeta
+import "github.com/yashirook/vaptest/pkg/target"
+
+type PolicyIdentifier struct {
+	PolicyName string `json:"name"`
 }
 
-type ObjectMeta struct {
-	ApiVersion string
-	ApiGroup   string
-	Name       string
-	Namespace  string
+type ValidationResult struct {
+	Target           target.TargetIdentifier `json:"target"`
+	Policy           PolicyIdentifier        `json:"policy"`
+	Success          bool                    `json:"success"`
+	IsValidated      bool                    `json:"isValidated"`
+	ValidationErrors []ValidationError       `json:"validationErrors,omitempty"`
+}
+
+type ValidationError struct {
+	Message string `json:"message"`
+	CELExpr string `json:"celExpression"`
 }

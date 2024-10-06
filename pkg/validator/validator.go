@@ -75,14 +75,17 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 	if err != nil {
 		return results, fmt.Errorf("failed to filter target: %w", err)
 	}
+	var success bool = true
+	var isValidated bool = false
 
-	for _, validation := range policy.Spec.Validations {
-		prog, err := makeCELProgram(&validation)
-		if err != nil {
-			return results, fmt.Errorf("failed to make AST: %w", err)
-		}
+	for _, t := range filteredTargets {
+		validationErrors := make([]ValidationError, 0)
+		for _, validation := range policy.Spec.Validations {
+			prog, err := makeCELProgram(&validation)
+			if err != nil {
+				return results, fmt.Errorf("failed to make AST: %w", err)
+			}
 
-		for _, t := range filteredTargets {
 			activation := map[string]interface{}{
 				"object": t.Object,
 			}
@@ -92,33 +95,37 @@ func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]Vali
 				fmt.Printf("eval error: %s\n", err)
 				continue
 			}
-			isValid, ok := out.Value().(bool)
+			res, ok := out.Value().(bool)
 			if !ok {
-				return results, fmt.Errorf("failed to convert CEL result to bool")
+				continue
 			}
 
-			results = appendResult(results, isValid, policy, t, validation)
+			if !res {
+				success = false
+				validationErrors = append(validationErrors, ValidationError{
+					Message: validation.Message,
+					CELExpr: validation.Expression,
+				})
+			}
+
+			isValidated = true
+		}
+
+		if isValidated {
+			results = appendResult(results, success, isValidated, policy, t, validationErrors)
 		}
 	}
 	return results, nil
 }
 
-func appendResult(results []ValidationResult, isValid bool, policy *v1.ValidatingAdmissionPolicy, target target.TargetInfo, validation v1.Validation) []ValidationResult {
+func appendResult(results []ValidationResult, success bool, isValidated bool, policy *v1.ValidatingAdmissionPolicy, target target.TargetInfo, validationErrors []ValidationError) []ValidationResult {
 	return append(results, ValidationResult{
-		PolicyObjectMeta: ObjectMeta{
-			ApiVersion: policy.APIVersion,
-			ApiGroup:   policy.Kind,
-			Name:       policy.Name,
+		Policy: PolicyIdentifier{
+			PolicyName: policy.Name,
 		},
-		IsValid:    isValid,
-		Message:    validation.Message,
-		Expression: validation.Expression,
-		TargetObjectMeta: ObjectMeta{
-			ApiVersion: target.APIGroup,
-			ApiGroup:   target.APIVersion,
-			Name:       target.ResourceName,
-			// [TODO] namespaceを返すようにする。namespaceが設定されていない場合のエラーハンドリングが必要
-			// Namespace:  metadata["namespace"].(string),
-		},
+		Success:          success,
+		IsValidated:      isValidated,
+		ValidationErrors: validationErrors,
+		Target:           target.TargetIdentifier,
 	})
 }

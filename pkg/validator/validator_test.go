@@ -35,17 +35,25 @@ func TestValidatePolicy(t *testing.T) {
 					Object: map[string]interface{}{
 						"metadata": map[string]interface{}{"name": "test-object"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object",
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:   "test.group",
+						APIVersion: "v1",
+						Resource:   "test-object",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "test-policy"},
-					IsValid:          true,
-					Message:          "Name must start with 'test'",
-					Expression:       "object.metadata.name.startsWith('test')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "test-policy",
+					},
+					Success:          true,
+					IsValidated:      true,
+					ValidationErrors: []ValidationError{},
+					Target: target.TargetIdentifier{
+						APIGroup:   "test.group",
+						APIVersion: "v1",
+						Resource:   "test-object",
 					},
 				},
 			},
@@ -68,17 +76,30 @@ func TestValidatePolicy(t *testing.T) {
 					Object: map[string]interface{}{
 						"metadata": map[string]interface{}{"name": "invalid-object"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "invalid-object",
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:   "test.group",
+						APIVersion: "v1",
+						Resource:   "invalid-object",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "test-policy"},
-					IsValid:          false,
-					Message:          "Name must start with 'test'",
-					Expression:       "object.metadata.name.startsWith('test')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "invalid-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "test-policy",
+					},
+					Success:     false,
+					IsValidated: true,
+					ValidationErrors: []ValidationError{
+						{
+							Message: "Name must start with 'test'",
+							CELExpr: "object.metadata.name.startsWith('test')",
+						},
+					},
+					Target: target.TargetIdentifier{
+						APIGroup:   "test.group",
+						APIVersion: "v1",
+						Resource:   "invalid-object",
 					},
 				},
 			},
@@ -125,7 +146,11 @@ func TestValidatePolicy(t *testing.T) {
 					Object: map[string]interface{}{
 						"metadata": map[string]interface{}{"name": "test-object"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object",
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:   "test.group",
+						APIVersion: "v1",
+						Resource:   "test-object",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{},
@@ -159,30 +184,37 @@ func TestValidatePolicy(t *testing.T) {
 			},
 			targetInfoList: target.TargetInfoList{
 				{
-					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "included-object"}},
-					APIGroup:     "included.group",
-					APIVersion:   "v1",
-					Resource:     "included-resources",
-					ResourceName: "included-object",
+					Object: map[string]interface{}{"metadata": map[string]interface{}{"name": "included-object"}},
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:     "included.group",
+						APIVersion:   "v1",
+						Resource:     "included-resources",
+						ResourceName: "included-object",
+					},
 				},
 				{
-					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "excluded-object"}},
-					APIGroup:     "excluded.group",
-					APIVersion:   "v1",
-					Resource:     "excluded-resources",
-					ResourceName: "excluded-object",
+					Object: map[string]interface{}{"metadata": map[string]interface{}{"name": "excluded-object"}},
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:     "excluded.group",
+						APIVersion:   "v1",
+						Resource:     "excluded-resources",
+						ResourceName: "excluded-object",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "exclude-resource-policy"},
-					IsValid:          true,
-					Message:          "常に有効",
-					Expression:       "true",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "included.group",
-						ApiGroup:   "v1",
-						Name:       "included-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "exclude-resource-policy",
+					},
+					Success:          true,
+					IsValidated:      true,
+					ValidationErrors: []ValidationError{},
+					Target: target.TargetIdentifier{
+						APIGroup:     "included.group",
+						APIVersion:   "v1",
+						Resource:     "included-resources",
+						ResourceName: "included-object",
 					},
 				},
 			},
@@ -215,30 +247,37 @@ func TestValidatePolicy(t *testing.T) {
 			},
 			targetInfoList: target.TargetInfoList{
 				{
-					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "matched-object"}},
-					APIGroup:     "matched.group",
-					APIVersion:   "v1",
-					Resource:     "matched-resources",
-					ResourceName: "matched-object",
+					Object: map[string]interface{}{"metadata": map[string]interface{}{"name": "matched-object"}},
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:     "matched.group",
+						APIVersion:   "v1",
+						Resource:     "matched-resources",
+						ResourceName: "matched-object",
+					},
 				},
 				{
-					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "unmatched-object"}},
-					APIGroup:     "unmatched.group",
-					APIVersion:   "v1",
-					Resource:     "unmatched-resources",
-					ResourceName: "unmatched-object",
+					Object: map[string]interface{}{"metadata": map[string]interface{}{"name": "unmatched-object"}},
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup:     "unmatched.group",
+						APIVersion:   "v1",
+						Resource:     "unmatched-resources",
+						ResourceName: "unmatched-object",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "match-resource-policy"},
-					IsValid:          true,
-					Message:          "常に有効",
-					Expression:       "true",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "matched.group",
-						ApiGroup:   "v1",
-						Name:       "matched-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "match-resource-policy",
+					},
+					Success:          true,
+					IsValidated:      true,
+					ValidationErrors: []ValidationError{},
+					Target: target.TargetIdentifier{
+						APIGroup:     "matched.group",
+						APIVersion:   "v1",
+						Resource:     "matched-resources",
+						ResourceName: "matched-object",
 					},
 				},
 			},
@@ -265,50 +304,45 @@ func TestValidatePolicy(t *testing.T) {
 					Object: map[string]interface{}{
 						"metadata": map[string]interface{}{"name": "test-valid-object"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-valid-object",
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-valid-object",
+					},
 				},
 				{
 					Object: map[string]interface{}{
 						"metadata": map[string]interface{}{"name": "test-object-invalid"},
 					},
-					APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object-invalid",
+					TargetIdentifier: target.TargetIdentifier{
+						APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object-invalid",
+					},
 				},
 			},
 			expectedResults: []ValidationResult{
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
-					IsValid:          true,
-					Message:          "Name must start with 'test'",
-					Expression:       "object.metadata.name.startsWith('test')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "multi-validation-policy",
+					},
+					Success:          true,
+					IsValidated:      true,
+					ValidationErrors: []ValidationError{},
+					Target: target.TargetIdentifier{
+						APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-valid-object",
 					},
 				},
 				{
-					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
-					IsValid:          true,
-					Message:          "Name must end with 'object'",
-					Expression:       "object.metadata.name.endsWith('object')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-valid-object",
+					Policy: PolicyIdentifier{
+						PolicyName: "multi-validation-policy",
 					},
-				},
-				{
-					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
-					IsValid:          true,
-					Message:          "Name must start with 'test'",
-					Expression:       "object.metadata.name.startsWith('test')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
+					Success:     false,
+					IsValidated: true,
+					ValidationErrors: []ValidationError{
+						{
+							Message: "Name must end with 'object'",
+							CELExpr: "object.metadata.name.endsWith('object')",
+						},
 					},
-				},
-				{
-					PolicyObjectMeta: ObjectMeta{Name: "multi-validation-policy"},
-					IsValid:          false,
-					Message:          "Name must end with 'object'",
-					Expression:       "object.metadata.name.endsWith('object')",
-					TargetObjectMeta: ObjectMeta{
-						ApiVersion: "test.group", ApiGroup: "v1", Name: "test-object-invalid",
+					Target: target.TargetIdentifier{
+						APIGroup: "test.group", APIVersion: "v1", ResourceName: "test-object-invalid",
 					},
 				},
 			},
