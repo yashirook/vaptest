@@ -131,6 +131,63 @@ func TestValidatePolicy(t *testing.T) {
 			expectedResults: []ValidationResult{},
 		},
 		{
+			name: "ExcludeResourceRules指定時のテスト",
+			policy: &v1.ValidatingAdmissionPolicy{
+				ObjectMeta: metav1.ObjectMeta{Name: "exclude-resource-policy"},
+				Spec: v1.ValidatingAdmissionPolicySpec{
+					MatchConstraints: &v1.MatchResources{
+						ExcludeResourceRules: []v1.NamedRuleWithOperations{
+							{
+								RuleWithOperations: v1.RuleWithOperations{
+									Rule: v1.Rule{
+										APIGroups:   []string{"excluded.group"},
+										APIVersions: []string{"v1"},
+										Resources:   []string{"excluded-resources"},
+									},
+								},
+								ResourceNames: []string{"excluded-object"},
+							},
+						},
+					},
+					Validations: []v1.Validation{
+						{
+							Expression: "true",
+							Message:    "常に有効",
+						},
+					},
+				},
+			},
+			targetInfoList: target.TargetInfoList{
+				{
+					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "included-object"}},
+					APIGroup:     "included.group",
+					APIVersion:   "v1",
+					Resource:     "included-resources",
+					ResourceName: "included-object",
+				},
+				{
+					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "excluded-object"}},
+					APIGroup:     "excluded.group",
+					APIVersion:   "v1",
+					Resource:     "excluded-resources",
+					ResourceName: "excluded-object",
+				},
+			},
+			expectedResults: []ValidationResult{
+				{
+					PolicyObjectMeta: ObjectMeta{Name: "exclude-resource-policy"},
+					IsValid:          true,
+					Message:          "常に有効",
+					Expression:       "true",
+					TargetObjectMeta: ObjectMeta{
+						ApiVersion: "included.group",
+						ApiGroup:   "v1",
+						Name:       "included-object",
+					},
+				},
+			},
+		},
+		{
 			name: "Valid case - Multiple validations",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "multi-validation-policy"},

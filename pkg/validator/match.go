@@ -1,11 +1,20 @@
 package validator
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/yashirook/vaptest/pkg/target"
 	v1 "k8s.io/api/admissionregistration/v1"
 )
+
+func matchesExcludeRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetInfo) bool {
+	if len(rules) == 0 || rules == nil {
+		return false
+	}
+
+	return matchesRule(rules, targetInfo)
+}
 
 func matchesRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetInfo) bool {
 	if len(rules) == 0 || rules == nil {
@@ -20,6 +29,7 @@ func matchesRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetIn
 			return false
 		}
 		if !matchesResource(rule.Resources, targetInfo.Resource, targetInfo.SubResource) {
+			fmt.Printf("%v resource is unmatch\n", targetInfo.ResourceName)
 			return false
 		}
 		if len(rule.ResourceNames) > 0 && !matchesString(rule.ResourceNames, targetInfo.ResourceName) {

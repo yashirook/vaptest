@@ -1,25 +1,29 @@
 package validator
 
 import (
+	"fmt"
+
 	"github.com/yashirook/vaptest/pkg/target"
 	v1 "k8s.io/api/admissionregistration/v1"
 )
 
 func filterTarget(policy *v1.ValidatingAdmissionPolicy, targetInfoList target.TargetInfoList) (target.TargetInfoList, error) {
 	filteredTargets := make(target.TargetInfoList, 0)
+	if policy.Spec.MatchConstraints == nil {
+		return targetInfoList, nil
+	}
 
 	for _, t := range targetInfoList {
-		if policy.Spec.MatchConstraints != nil {
-			excluded := matchesRule(policy.Spec.MatchConstraints.ExcludeResourceRules, &t)
-			if excluded {
-				continue
-			}
-			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t)
-			if !matched {
-				continue
-			}
+		// ExcludeResourceRulesが空でない場合のみチェックを行う
+		fmt.Printf("excluded: %v", matchesExcludeRule(policy.Spec.MatchConstraints.ExcludeResourceRules, &t))
+		if len(policy.Spec.MatchConstraints.ExcludeResourceRules) > 0 && matchesExcludeRule(policy.Spec.MatchConstraints.ExcludeResourceRules, &t) {
+			continue
 		}
 
+		// ResourceRulesが空の場合、デフォルトで全てのリソースにマッチする
+		if len(policy.Spec.MatchConstraints.ResourceRules) > 0 && !matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t) {
+			continue
+		}
 		filteredTargets = append(filteredTargets, t)
 	}
 
