@@ -188,6 +188,62 @@ func TestValidatePolicy(t *testing.T) {
 			},
 		},
 		{
+			name: "MatchResourceRules指定時のテスト",
+			policy: &v1.ValidatingAdmissionPolicy{
+				ObjectMeta: metav1.ObjectMeta{Name: "match-resource-policy"},
+				Spec: v1.ValidatingAdmissionPolicySpec{
+					MatchConstraints: &v1.MatchResources{
+						ResourceRules: []v1.NamedRuleWithOperations{
+							{
+								RuleWithOperations: v1.RuleWithOperations{
+									Rule: v1.Rule{
+										APIGroups:   []string{"matched.group"},
+										APIVersions: []string{"v1"},
+										Resources:   []string{"matched-resources"},
+									},
+								},
+							},
+						},
+					},
+					Validations: []v1.Validation{
+						{
+							Expression: "true",
+							Message:    "常に有効",
+						},
+					},
+				},
+			},
+			targetInfoList: target.TargetInfoList{
+				{
+					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "matched-object"}},
+					APIGroup:     "matched.group",
+					APIVersion:   "v1",
+					Resource:     "matched-resources",
+					ResourceName: "matched-object",
+				},
+				{
+					Object:       map[string]interface{}{"metadata": map[string]interface{}{"name": "unmatched-object"}},
+					APIGroup:     "unmatched.group",
+					APIVersion:   "v1",
+					Resource:     "unmatched-resources",
+					ResourceName: "unmatched-object",
+				},
+			},
+			expectedResults: []ValidationResult{
+				{
+					PolicyObjectMeta: ObjectMeta{Name: "match-resource-policy"},
+					IsValid:          true,
+					Message:          "常に有効",
+					Expression:       "true",
+					TargetObjectMeta: ObjectMeta{
+						ApiVersion: "matched.group",
+						ApiGroup:   "v1",
+						Name:       "matched-object",
+					},
+				},
+			},
+		},
+		{
 			name: "Valid case - Multiple validations",
 			policy: &v1.ValidatingAdmissionPolicy{
 				ObjectMeta: metav1.ObjectMeta{Name: "multi-validation-policy"},
