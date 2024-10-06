@@ -1,14 +1,23 @@
 package validator
 
-// func filterTargetObjects(targetObjects []runtime.Object, policy *v1.ValidatingAdmissionPolicy) []runtime.Object {
-// 	filteredObjects := make([]runtime.Object, 0)
+import (
+	"github.com/yashirook/vaptest/pkg/target"
+	v1 "k8s.io/api/admissionregistration/v1"
+)
 
-// 	for _, target := range targetObjects {
-// 		info := resourceInfo{
-// 			apiGroup:    target.GetObjectKind().GroupVersionKind().Group,
-// 			apiVersion:  target.GetObjectKind().GroupVersionKind().Version,
-// 			resource:    target.GetObjectKind().GroupVersionKind().Kind,
-// 			subResource: target.GetSubresource(),
-// 		}
-// 	}
-// }
+func filterTarget(policy *v1.ValidatingAdmissionPolicy, targetInfoList target.TargetInfoList) (target.TargetInfoList, error) {
+	filteredTargets := make(target.TargetInfoList, 0)
+
+	for _, t := range targetInfoList {
+		if policy.Spec.MatchConstraints != nil {
+			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t)
+			if !matched {
+				continue
+			}
+		}
+
+		filteredTargets = append(filteredTargets, t)
+	}
+
+	return filteredTargets, nil
+}

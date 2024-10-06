@@ -71,17 +71,9 @@ func makeCELProgram(validation *v1.Validation) (cel.Program, error) {
 
 func (v *Validator) validatePolicy(policy *v1.ValidatingAdmissionPolicy) ([]ValidationResult, error) {
 	results := make([]ValidationResult, 0)
-	filteredTargets := make(target.TargetInfoList, 0)
-
-	for _, t := range v.TargetInfoList {
-		if policy.Spec.MatchConstraints != nil {
-			matched := matchesRule(policy.Spec.MatchConstraints.ResourceRules, &t)
-			if !matched {
-				continue
-			}
-		}
-
-		filteredTargets = append(filteredTargets, t)
+	filteredTargets, err := filterTarget(policy, v.TargetInfoList)
+	if err != nil {
+		return results, fmt.Errorf("failed to filter target: %w", err)
 	}
 
 	for _, validation := range policy.Spec.Validations {

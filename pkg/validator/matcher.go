@@ -5,36 +5,7 @@ import (
 
 	"github.com/yashirook/vaptest/pkg/target"
 	v1 "k8s.io/api/admissionregistration/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
-
-type resourceInfo struct {
-	apiGroup     string
-	apiVersion   string
-	resource     string
-	subResource  string
-	resourceName string
-	operation    string
-}
-
-func getObjectMeta(obj runtime.Object) metav1.Object {
-	if accessor, err := meta.Accessor(obj); err == nil {
-		return accessor
-	}
-	return nil
-}
-
-func getGVK(obj runtime.Object, scheme *runtime.Scheme) (*schema.GroupVersionKind, error) {
-	gvk, err := apiutil.GVKForObject(obj, scheme)
-	if err != nil {
-		return nil, err
-	}
-	return &gvk, nil
-}
 
 func matchesRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetInfo) bool {
 	if len(rules) == 0 || rules == nil {
