@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/yashirook/vaptest/pkg/target"
@@ -29,7 +30,7 @@ func matchesRule(rules []v1.NamedRuleWithOperations, targetInfo *target.TargetIn
 			return false
 		}
 		if !matchesResource(rule.Resources, targetInfo.Resource, targetInfo.SubResource) {
-			fmt.Printf("%v resource is unmatch\n", targetInfo.ResourceName)
+			fmt.Fprintf(os.Stderr, "%v resource is unmatch\n", targetInfo.ResourceName)
 			return false
 		}
 		if len(rule.ResourceNames) > 0 && !matchesString(rule.ResourceNames, targetInfo.ResourceName) {

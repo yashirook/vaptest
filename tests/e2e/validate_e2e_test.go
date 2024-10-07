@@ -43,6 +43,30 @@ func TestValidate(t *testing.T) {
 			expectedResults:          []string{"Deploymentにはラベルが必要です"},
 			expectedValidationErrors: 2,
 		},
+		{
+			name: "match_constraints_policy_valid",
+			targetPaths: []string{
+				"testdata/02_match_constraints_policy/valid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/02_match_constraints_policy/policy.yaml",
+			},
+			expectedError:            false,
+			expectedResults:          []string{"all validation success!"},
+			expectedValidationErrors: 0,
+		},
+		{
+			name: "match_constraints_policy_invalid",
+			targetPaths: []string{
+				"testdata/02_match_constraints_policy/invalid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/02_match_constraints_policy/policy.yaml",
+			},
+			expectedError:            false,
+			expectedResults:          []string{"Deploymentにはラベルが必要です"},
+			expectedValidationErrors: 1,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -65,13 +89,17 @@ func TestValidate(t *testing.T) {
 			if tc.expectedError {
 				assert.Error(t, err, "エラーが発生することを期待しています")
 				assert.Contains(t, stderr.String(), tc.expectedResults, "期待するエラーメッセージが含まれていること")
-			} else {
-				assert.NoError(t, err, "エラーが発生しないことを期待しています")
-				for _, expectedResult := range tc.expectedResults {
-					assert.Contains(t, stdout.String(), expectedResult, "期待する出力が含まれていること")
-				}
+				return
+			}
+
+			assert.NoError(t, err, "エラーが発生しないことを期待しています")
+			for _, expectedResult := range tc.expectedResults {
+				assert.Contains(t, stdout.String(), expectedResult, "期待する出力が含まれていること")
+			}
+			if tc.expectedValidationErrors > 0 {
 				assert.Equal(t, tc.expectedValidationErrors+1, strings.Count(stdout.String(), "\n"), "期待する行数が含まれていること")
 			}
+
 		})
 	}
 }
