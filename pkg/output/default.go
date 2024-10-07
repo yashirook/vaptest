@@ -16,7 +16,7 @@ func NewDefaultFormatter() *DefaultFormatter {
 	return &DefaultFormatter{}
 }
 
-func (d *DefaultFormatter) Format(results []validator.ValidationResult) error {
+func (d *DefaultFormatter) Format(results validator.ValidationResultList) error {
 	writer := tabwriter.NewWriter(
 		// 標準出力を指定
 		os.Stdout,
@@ -24,7 +24,7 @@ func (d *DefaultFormatter) Format(results []validator.ValidationResult) error {
 		0, 0, 2, ' ', 0,
 	)
 
-	if len(results) == 0 {
+	if len(results.FailedResults()) == 0 {
 		fmt.Println("all validation success!")
 		return nil
 	}
