@@ -46,10 +46,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "match_constraints_policy_valid",
 			targetPaths: []string{
-				"testdata/02_match_constraints_policy/valid-target.yaml",
+				"testdata/02_match_constraints_resource_rule_policy/valid-target.yaml",
 			},
 			policyPaths: []string{
-				"testdata/02_match_constraints_policy/policy.yaml",
+				"testdata/02_match_constraints_resource_rule_policy/policy.yaml",
 			},
 			expectedError:            false,
 			expectedResults:          []string{"all validation success!"},
@@ -58,14 +58,37 @@ func TestValidate(t *testing.T) {
 		{
 			name: "match_constraints_policy_invalid",
 			targetPaths: []string{
-				"testdata/02_match_constraints_policy/invalid-target.yaml",
+				"testdata/02_match_constraints_resource_rule_policy/invalid-target.yaml",
 			},
 			policyPaths: []string{
-				"testdata/02_match_constraints_policy/policy.yaml",
+				"testdata/02_match_constraints_resource_rule_policy/policy.yaml",
 			},
 			expectedError:            false,
 			expectedResults:          []string{"Deploymentにはラベルが必要です"},
 			expectedValidationErrors: 1,
+		},
+		{
+			name: "match_constraints_exclude_resource_rule_policy_valid",
+			targetPaths: []string{
+				"testdata/03_match_constraints_exclute_resource_rule_policy/valid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/03_match_constraints_exclute_resource_rule_policy/policy.yaml",
+			},
+			expectedError:   false,
+			expectedResults: []string{"all validation success!"},
+		},
+		{
+			name: "match_constraints_exclude_resource_rule_policy_invalid",
+			targetPaths: []string{
+				"testdata/03_match_constraints_exclute_resource_rule_policy/invalid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/03_match_constraints_exclute_resource_rule_policy/policy.yaml",
+			},
+			expectedError:            false,
+			expectedResults:          []string{},
+			expectedValidationErrors: 0,
 		},
 	}
 
