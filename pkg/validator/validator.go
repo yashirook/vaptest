@@ -27,6 +27,17 @@ func NewValidator(targets target.TargetInfoList, policies []*v1.ValidatingAdmiss
 		return Validator{}, errors.New("policies is empty")
 	}
 
+	for _, policy := range policies {
+		if policy.Spec.Validations == nil {
+			return Validator{}, fmt.Errorf("policy %s is invalid: validations is empty", policy.Name)
+		}
+		for _, validation := range policy.Spec.Validations {
+			if validation.Expression == "" {
+				return Validator{}, fmt.Errorf("policy %s is invalid: validation expression is empty", policy.Name)
+			}
+		}
+	}
+
 	return Validator{
 		TargetInfoList: targets,
 		Policies:       policies,

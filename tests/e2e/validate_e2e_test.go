@@ -14,6 +14,7 @@ type ValidateE2ETest struct {
 	targetPaths              []string
 	policyPaths              []string
 	expectedError            bool
+	expectedErrorMessages    []string
 	expectedResults          []string
 	expectedValidationErrors int
 }
@@ -90,6 +91,91 @@ func TestValidate(t *testing.T) {
 			expectedResults:          []string{},
 			expectedValidationErrors: 0,
 		},
+		{
+			name: "multiple_target_and_policy_valid",
+			targetPaths: []string{
+				"testdata/04_multiple_target_and_policy/target1.yaml",
+				"testdata/04_multiple_target_and_policy/target2.yaml",
+			},
+			policyPaths: []string{
+				"testdata/04_multiple_target_and_policy/policy1.yaml",
+				"testdata/04_multiple_target_and_policy/policy2.yaml",
+			},
+			expectedError:            false,
+			expectedResults:          []string{"Deploymentの名前はappで終わる必要があります", "リソースにはラベルが必要です"},
+			expectedValidationErrors: 5,
+		},
+		// invalid case
+		{
+			name: "invalid_target",
+			targetPaths: []string{
+				"testdata/not_exist_target.yaml",
+			},
+			policyPaths:   []string{},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to load target manifests",
+			},
+		},
+		{
+			name:        "invalid_policy",
+			targetPaths: []string{},
+			policyPaths: []string{
+				"testdata/not_exist_policy.yaml",
+			},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to load policy objects",
+			},
+		},
+		{
+			name:        "empty_target",
+			targetPaths: []string{},
+			policyPaths: []string{
+				"testdata/01_simple_policy/policy.yaml",
+			},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to create validator",
+			},
+		},
+		{
+			name: "empty_policy",
+			targetPaths: []string{
+				"testdata/01_simple_policy/valid-target.yaml",
+			},
+			policyPaths:   []string{},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to create validator",
+			},
+		},
+		{
+			name: "invalid_policy_without_validations",
+			targetPaths: []string{
+				"testdata/invalid/01_invalid_policy/invalid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/invalid/01_invalid_policy/policy-without-validations.yaml",
+			},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to create validator",
+			},
+		},
+		{
+			name: "invalid_policy_without_expression",
+			targetPaths: []string{
+				"testdata/invalid/01_invalid_policy/invalid-target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/invalid/01_invalid_policy/policy-without-expression.yaml",
+			},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"failed to create validator",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -111,7 +197,9 @@ func TestValidate(t *testing.T) {
 
 			if tc.expectedError {
 				assert.Error(t, err, "エラーが発生することを期待しています")
-				assert.Contains(t, stderr.String(), tc.expectedResults, "期待するエラーメッセージが含まれていること")
+				for _, expectedError := range tc.expectedErrorMessages {
+					assert.Contains(t, stderr.String(), expectedError, "期待するエラーメッセージが含まれていること")
+				}
 				return
 			}
 
