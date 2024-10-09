@@ -30,7 +30,7 @@ func (d *DefaultFormatter) Format(results validator.ValidationResultList) error 
 	}
 
 	// ヘッダー行の出力
-	fmt.Fprintln(writer, "API_VERSION\tKIND\tRESOURCE_NAME\tNAMESPACE\tVALIDATION_POLICY\tERRORS")
+	fmt.Fprintln(writer, "POLICY\tEVALUATED_RESOURCE\tRESULT\tERRORS")
 
 	// 各検証結果をテーブルに追加
 	for _, result := range results {
@@ -43,8 +43,8 @@ func (d *DefaultFormatter) Format(results validator.ValidationResultList) error 
 		pol := result.Policy
 
 		// オブジェクト識別情報をまとめる
-		apiVersion := fmt.Sprintf("%s/%s",
-			obj.APIGroup, obj.APIVersion,
+		resource := fmt.Sprintf("%s/%s",
+			obj.Resource, obj.ResourceName,
 		)
 
 		// エラー内容をまとめる
@@ -59,13 +59,18 @@ func (d *DefaultFormatter) Format(results validator.ValidationResultList) error 
 			errors = "-"
 		}
 
+		var res string
+		if result.Success {
+			res = "Pass"
+		} else {
+			res = "Fail"
+		}
+
 		// テーブル行を作成
-		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%v\t%s\n",
-			apiVersion,
-			obj.Kind,
-			obj.ResourceName,
-			obj.Namespace,
+		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\n",
 			pol.PolicyName,
+			resource,
+			res,
 			errors,
 		)
 	}
