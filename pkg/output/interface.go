@@ -6,5 +6,5 @@ import (
 
 // OutputFormatter は検証結果を出力するためのインターフェースです。
 type OutputFormatter interface {
-	Format(results []validator.ValidationResult) error
+	Output(results []validator.ValidationResult) error
 }

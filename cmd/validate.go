@@ -45,6 +45,6 @@ func validate(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	formatter := output.NewDefaultFormatter()
-	formatter.Format(results)
+	formatter := output.NewTableFormatter()
+	formatter.Output(results)
 }

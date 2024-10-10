@@ -9,14 +9,14 @@ import (
 	"github.com/yashirook/vaptest/pkg/validator"
 )
 
-type DefaultFormatter struct {
+type TableFormatter struct {
 }
 
-func NewDefaultFormatter() *DefaultFormatter {
-	return &DefaultFormatter{}
+func NewTableFormatter() *TableFormatter {
+	return &TableFormatter{}
 }
 
-func (d *DefaultFormatter) Format(results validator.ValidationResultList) error {
+func (d *TableFormatter) Output(results validator.ValidationResultList) error {
 	writer := tabwriter.NewWriter(
 		// 標準出力を指定
 		os.Stdout,
