@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-deployment
+  labels:
+    app: example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      containers:
+      - name: example-container
+        image: nginx:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-service
+  labels:
+    app: example
+spec:
+  selector:
+    app: example
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-configmap
+  labels:
+    app: example
+data:
+  key1: value1
+  key2: value2
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: example-daemonset
+  labels:
+    app: example
+spec:
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      containers:
+      - name: example-container
+        image: nginx:latest
+---
+# unsupported target resource
+apiVersion: test
+kind: Test
+metadata:
+  name: example-hpa
+spec:
+  key: value

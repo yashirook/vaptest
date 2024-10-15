@@ -1,0 +1,9 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: deployment-validator
+spec:
+  failurePolicy: Fail
+  validations:
+    - expression: "has(object.metadata.labels)"
+      message: "Deploymentにはラベルが必要です"

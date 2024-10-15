@@ -177,6 +177,20 @@ func TestValidate(t *testing.T) {
 				"failed to create validator",
 			},
 		},
+		// 対応していないターゲットリソース
+		{
+			name: "unsupported_target_resource",
+			targetPaths: []string{
+				"testdata/invalid/02_unsupported_target_resource/target.yaml",
+			},
+			policyPaths: []string{
+				"testdata/invalid/02_unsupported_target_resource/policy.yaml",
+			},
+			expectedError: true,
+			expectedErrorMessages: []string{
+				"no kind \"Test\" is registered for version \"test\" in scheme",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
