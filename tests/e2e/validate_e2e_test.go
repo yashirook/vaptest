@@ -29,8 +29,9 @@ func TestValidate(t *testing.T) {
 			policyPaths: []string{
 				"testdata/01_simple_policy/policy.yaml",
 			},
-			expectedError:   false,
-			expectedResults: []string{"all validation success!"},
+			expectedError:            false,
+			expectedValidationErrors: 0,
+			expectedResults:          []string{"all validation success!"},
 		},
 		{
 			name: "simple_policy_invalid",
@@ -42,7 +43,7 @@ func TestValidate(t *testing.T) {
 			},
 			expectedError:            false,
 			expectedResults:          []string{"Deploymentにはラベルが必要です"},
-			expectedValidationErrors: 2,
+			expectedValidationErrors: 3,
 		},
 		{
 			name: "match_constraints_policy_valid",
