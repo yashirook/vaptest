@@ -1,46 +1,50 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/yashirook/vaptest/pkg/loader"
+	"github.com/yashirook/vaptest/pkg/output"
+	"github.com/yashirook/vaptest/pkg/target"
+	"github.com/yashirook/vaptest/pkg/validator"
 )
 
 func validate(cmd *cobra.Command, args []string) {
 
 	ldr := loader.NewLoader(scheme)
-	targets, err := ldr.LoadObjectFromPaths(targetPaths)
+	targetObjects, err := ldr.LoadObjectFromPaths(targetPaths)
 	if err != nil {
-		fmt.Println(fmt.Errorf("failed to load target manifests: %w", err))
-		return
+		fmt.Fprintln(os.Stderr, fmt.Errorf("failed to load target manifests: %w", err))
+		os.Exit(1)
 	}
 
-	targetJson, err := json.Marshal(targets)
+	targets, err := target.NewTargetInfoList(targetObjects, scheme)
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Fprintln(os.Stderr, fmt.Errorf("failed to create target info list: %w", err))
+		os.Exit(1)
 	}
-	fmt.Printf("target manifests: %s\n", string(targetJson))
 
 	policies, bindings, err := ldr.LoadPolicyFromPaths(policyPaths)
 	if err != nil {
-		fmt.Println(fmt.Errorf("failed to load policy objects: %w", err))
-		return
+		fmt.Fprintln(os.Stderr, fmt.Errorf("failed to load policy objects: %w", err))
+		os.Exit(1)
 	}
 
-	policyJson, err := json.Marshal(policies)
+	validator, err := validator.NewValidator(targets, policies, bindings, scheme)
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Fprintln(os.Stderr, fmt.Errorf("failed to create validator: %w", err))
+		os.Exit(1)
 	}
-	fmt.Printf("policy manifests: %s\n", string(policyJson))
-	bindingsJson, err := json.Marshal(bindings)
+
+	results, err := validator.Validate()
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Fprintln(os.Stderr, fmt.Errorf("validation error: %w", err))
+		os.Exit(1)
 	}
-	fmt.Printf("policy manifests: %s\n", string(bindingsJson))
+
+	formatter := output.NewTableFormatter()
+	formatter.Output(results)
 }
