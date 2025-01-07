@@ -19,7 +19,16 @@
 To install `vaptest`, make sure you have [Go](https://golang.org/dl/) installed (version 1.16 or higher), and then run:
 
 ```bash
-go install github.com/yashirook/vaptest@latest
+$ make build
+
+# Check Version
+$ ./bin/vaptest version
+vaptest version: 0.1.0 (commit ad669bc, build at 2025-01-07T22:43:28Z)
+```
+
+Please move the binary file to a directory that is included in the system PATH.
+```bash
+$ mv ./bin/vaptest /usr/local/bin
 ```
 
 ## Usage
@@ -27,14 +36,14 @@ go install github.com/yashirook/vaptest@latest
 Validate a single Kubernetes manifest against your policies:
 
 ```bash
-vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
+$ vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
 all validation success!
 ```
 
 Validate all manifests in a directory:
 
 ```bash
-vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
+$ vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
 POLICY         EVALUATED_RESOURCE            RESULT  ERRORS
 require-label  deployments/nginx-deployment  Fail    Deployment has to have namespace (Expression: has(object.metadata.namespace))
 require-label  services/nginx-service        Fail    Deployment has to have label (Expression: has(object.metadata.labels))
