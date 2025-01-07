@@ -1,0 +1,9 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: resource-name-validator
+spec:
+  failurePolicy: Fail
+  validations:
+    - expression: "matches(object.metadata.name, '^*app$')"
+      message: "Deploymentの名前はappで終わる必要があります"

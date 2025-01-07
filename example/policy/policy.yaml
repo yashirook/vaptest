@@ -1,0 +1,11 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-label
+spec:
+  validations:
+    - expression: "has(object.metadata.labels)"
+      message: "Deployment has to have label"
+    - expression: "has(object.metadata.namespace)"
+      message: "Deployment has to have namespace"
+  failurePolicy: Fail
