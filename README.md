@@ -1,6 +1,6 @@
 # vaptest
 
-**vaptest** is a command-line tool for testing Kubernetes `ValidationAdmissionPolicy` and `ValidationAdmissionPolicyBinding` against actual Kubernetes manifests.
+**vaptest** is a minimal command-line tool for testing Kubernetes `ValidationAdmissionPolicy` and `ValidationAdmissionPolicyBinding` against actual Kubernetes manifests.
 
 > **Note:** This project is currently under development. Features and interfaces may change.
 
@@ -27,40 +27,17 @@ go install github.com/yashirook/vaptest@latest
 Validate a single Kubernetes manifest against your policies:
 
 ```bash
-vaptest validate --policy-dir=./policies --manifest=./manifests/deployment.yaml
+vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
+all validation success!
 ```
 
 Validate all manifests in a directory:
 
 ```bash
-vaptest validate -p ./policies -m ./manifests/
-```
-
-### Run Test Cases
-Execute test cases defined in a directory:
-
-```bash
-vaptest test --policy-dir=./policies --test-dir=./tests/
-```
-
-## Command-Line Options
-- --policy-dir, -p: Directory containing ValidationAdmissionPolicy and ValidationAdmissionPolicyBinding definitions (required).
-- --manifest, -m: Kubernetes manifest file or directory to validate.
-- --test-dir, -t: Directory containing test cases.
-- --output, -o: Output format (text or json). Default is text.
-- --verbose, -v: Enable verbose output.
-
-## Examples
-Validate a manifest with verbose output:
-
-```bash
-vaptest validate -p ./policies -m ./manifests/deployment.yaml -v
-```
-
-Output results in JSON format:
-
-```bash
-vaptest validate -p ./policies -m ./manifests/ -o json
+vaptest validate --policies=./example/policy/policy.yaml --targets=./example/target/valid-deployment.yaml
+POLICY         EVALUATED_RESOURCE            RESULT  ERRORS
+require-label  deployments/nginx-deployment  Fail    Deployment has to have namespace (Expression: has(object.metadata.namespace))
+require-label  services/nginx-service        Fail    Deployment has to have label (Expression: has(object.metadata.labels))
 ```
 
 ## Development Status

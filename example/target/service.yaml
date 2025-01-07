@@ -3,8 +3,6 @@ kind: Service
 metadata:
   name: nginx-service
   namespace: default
-  labels:
-    host: https://www.ub-speeda.com/v1/systems/ping
 spec:
   selector:
     app: nginx
