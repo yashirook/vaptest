@@ -7,13 +7,10 @@ import (
 )
 
 func createStaticRESTMapper(scheme *runtime.Scheme) meta.RESTMapper {
-	// スキームから優先されるグループバージョンを取得
 	groupVersions := scheme.PrioritizedVersionsAllGroups()
 
-	// デフォルトのRESTMapperを作成
 	mapper := meta.NewDefaultRESTMapper(groupVersions)
 
-	// マッピングを追加
 	addResourceMappings(mapper)
 
 	return mapper
